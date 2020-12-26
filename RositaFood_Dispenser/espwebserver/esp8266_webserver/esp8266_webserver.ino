@@ -1,10 +1,19 @@
-// Load Wi-Fi library
 #include <ESP8266WiFi.h>
 #include <NTPClient.h>
 #include <WiFiUdp.h>
+#include <Wire.h>
+#include "SH1106Wire.h"   // legacy: 
+#include "SH1106.h"
+
+///lcd oled
+SH1106   display(0x3C, 5, 4);    // For I2C
+
 // Define NTP Client to get time
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org");
+
+
+
 
 int hora;
 int minuto;
@@ -35,6 +44,8 @@ unsigned long previousTime = 0;
 // Define timeout time in milliseconds (example: 2000ms = 2s)
 const long timeoutTime = 2000;
 
+
+
 void setup() {
   
   Serial.begin(115200);
@@ -42,6 +53,15 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT); 
   pinMode(output16, OUTPUT);
   digitalWrite(output16, LOW);
+
+
+  // Initialising the UI will init the display too.
+  display.init();
+  display.flipScreenVertically();
+  display.setColor(WHITE);
+  //display.setColor(BLACK);
+  display.setFont(ArialMT_Plain_10);
+  
 
   // Connect to Wi-Fi network with SSID and password
   Serial.print("Connecting to ");
@@ -62,6 +82,7 @@ void setup() {
 }
 
 void loop(){
+  
   timeClient.update();
   int currentHour = timeClient.getHours();
   //Serial.print("Hour: ");
@@ -72,7 +93,24 @@ void loop(){
   //Serial.println(currentMinute); 
 
   WiFiClient client = server.available();   // Listen for incoming clients
- 
+
+ ////display
+       display.clear();
+       display.setFont(ArialMT_Plain_16);
+      
+      String Current = "TIME " + String(currentHour) + ":" + String(currentMinute);
+      display.drawString(0,0, String (Current));
+
+     String setT = "SET: " + String(hora) + ":" + String(minuto);
+      display.drawString(0,20, String (setT));
+
+      sensor= analogRead(ADC);
+      
+      String adc = "Adc" + String(sensor) ;
+      display.drawString(60,45, String (adc));
+      
+      display.display();
+      
 
   ////Serial.println("hora def = ");
   //Serial.print(hora);
@@ -124,19 +162,23 @@ void loop(){
 
               if (header.indexOf("GET /D") >= 0) {
                Serial.println("desligado");
-               client.print("Dispensador desligado");
+               client.print("0");
                digitalWrite(output16, HIGH);;
                delay(1000);                // waits for a second
               }
 
                if (header.indexOf("GET /estado") >= 0) {
                Serial.println("estado");
-               client.print("ESTADO DISPENSADOR: OFF");
+                sensor= analogRead(ADC);
+                if(sensor<5)
+                  client.print("0");
+                else
+                  client.print("1");
                digitalWrite(output16, HIGH);;
                delay(1000);                // waits for a second
               }
 
-               if (header.indexOf("GET /hour") >= 0) {
+               if (header.indexOf("GET /hora") >= 0) {
                Serial.println("estado");
                 client.print("Hora Marcada");
                 client.print(hora);
@@ -148,6 +190,7 @@ void loop(){
 
                if (header.indexOf("GET /L") >= 0) {
                 Serial.println("ligado");
+                client.print("1");
                 digitalWrite(output16, LOW);
 
               }
