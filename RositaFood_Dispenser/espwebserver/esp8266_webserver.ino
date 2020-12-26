@@ -5,6 +5,7 @@
 // Define NTP Client to get time
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org");
+
 int hora;
 int minuto;
 
@@ -33,6 +34,7 @@ unsigned long previousTime = 0;
 const long timeoutTime = 2000;
 
 void setup() {
+  
   Serial.begin(115200);
   // Initialize the output variables as outputs
   pinMode(LED_BUILTIN, OUTPUT); 
@@ -63,26 +65,26 @@ void setup() {
 void loop(){
   timeClient.update();
   int currentHour = timeClient.getHours();
-  Serial.print("Hour: ");
-  Serial.println(currentHour);  
+  //Serial.print("Hour: ");
+ // Serial.println(currentHour);  
 
   int currentMinute = timeClient.getMinutes();
-  Serial.print("Minutes: ");
-  Serial.println(currentMinute); 
+  //Serial.print("Minutes: ");
+  //Serial.println(currentMinute); 
 
   WiFiClient client = server.available();   // Listen for incoming clients
   
 
-  Serial.println("hora def = ");
-  Serial.print(hora);
-  Serial.println("minutos def = ");
-  Serial.print(minuto);
+  ////Serial.println("hora def = ");
+  //Serial.print(hora);
+  //Serial.println("minutos def = ");
+  //Serial.print(minuto);
 
   
    if(hora == currentHour && minuto == currentMinute)
     digitalWrite(LED_BUILTIN, 0);
    else
-    digitalWrite(LED_BUILTIN, 1);
+    //digitalWrite(LED_BUILTIN, 1);
   if (client) {                             // If a new client connects,
     Serial.println("New Client.");          // print a message out in the serial port
     String currentLine = "";                // make a String to hold incoming data from the client
@@ -118,43 +120,26 @@ void loop(){
               digitalWrite(LED_BUILTIN, 1);
 
               }
+
+              if (header.indexOf("GET /D") >= 0) {
+               Serial.println("desligado");
+               digitalWrite(LED_BUILTIN, 1);
+               delay(1000);                // waits for a second
+              }
+
+               if (header.indexOf("GET /L") >= 0) {
+                Serial.println("ligado");
+               digitalWrite(LED_BUILTIN, 0);
+
+              }
               
             
               Serial.println(header);
             
-            // Display the HTML web page
-            client.println("<!DOCTYPE html><html>");
-            client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-            client.println("<link rel=\"icon\" href=\"data:,\">");
-            // CSS to style the on/off buttons 
-            // Feel free to change the background-color and font-size attributes to fit your preferences
-            client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
-            client.println(".button { background-color: #195B6A; border: none; color: white; padding: 16px 40px;");
-            client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
-            client.println(".button2 {background-color: #77878A;}</style></head>");
-            
-            // Web Page Heading
-            client.println("<body><h1>ESP8266 Web Server</h1>");
-            
-            // Display current state, and ON/OFF buttons for GPIO 5  
-            client.println("<p>GPIO 5 - State " + output5State + "</p>");
-            // If the output5State is off, it displays the ON button       
-            if (output5State=="off") {
-              client.println("<p><a href=\"/5/on\"><button class=\"button\">ON</button></a></p>");
-            } else {
-              client.println("<p><a href=\"/5/off\"><button class=\"button button2\">OFF</button></a></p>");
-            } 
-               
-            // Display current state, and ON/OFF buttons for GPIO 4  
-            client.println("<p>GPIO 4 - State " + output4State + "</p>");
-            // If the output4State is off, it displays the ON button       
-            if (output4State=="off") {
-              client.println("<p><a href=\"/4/on\"><button class=\"button\">ON</button></a></p>");
-            } else {
-              client.println("<p><a href=\"/4/off\"><button class=\"button button2\">OFF</button></a></p>");
-            }
-            client.println("</body></html>");
-            client.println("<p><a href=\"/timer/\">11:59</p>");
+
+            client.print(hora);
+            client.print(":");
+            client.print(minuto);
             // The HTTP response ends with another blank line
             client.println();
             // Break out of the while loop
