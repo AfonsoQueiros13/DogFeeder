@@ -84,7 +84,7 @@ void loop(){
    if(hora == currentHour && minuto == currentMinute)
     digitalWrite(LED_BUILTIN, 0);
    else
-    //digitalWrite(LED_BUILTIN, 1);
+    digitalWrite(LED_BUILTIN, 1);
   if (client) {                             // If a new client connects,
     Serial.println("New Client.");          // print a message out in the serial port
     String currentLine = "";                // make a String to hold incoming data from the client
