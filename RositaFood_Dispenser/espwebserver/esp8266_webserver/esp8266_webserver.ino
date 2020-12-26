@@ -8,6 +8,8 @@ NTPClient timeClient(ntpUDP, "pool.ntp.org");
 
 int hora;
 int minuto;
+int ADC=0;
+int sensor=0;
 
 /* Set these to your desired credentials. */
 const char *ssid = "NOS_Internet_5533"; //Enter your WIFI ssid
@@ -23,8 +25,8 @@ String output5State = "off";
 String output4State = "off";
 
 // Assign output variables to GPIO pins
-const int output5 = 5;
-const int output4 = 4;
+const int output16 = 16;
+
 
 // Current time
 unsigned long currentTime = millis();
@@ -38,11 +40,8 @@ void setup() {
   Serial.begin(115200);
   // Initialize the output variables as outputs
   pinMode(LED_BUILTIN, OUTPUT); 
-  pinMode(output5, OUTPUT);
-  pinMode(output4, OUTPUT);
-  // Set outputs to LOW
-  digitalWrite(output5, LOW);
-  digitalWrite(output4, LOW);
+  pinMode(output16, OUTPUT);
+  digitalWrite(output16, LOW);
 
   // Connect to Wi-Fi network with SSID and password
   Serial.print("Connecting to ");
@@ -73,7 +72,7 @@ void loop(){
   //Serial.println(currentMinute); 
 
   WiFiClient client = server.available();   // Listen for incoming clients
-  
+ 
 
   ////Serial.println("hora def = ");
   //Serial.print(hora);
@@ -113,33 +112,54 @@ void loop(){
               String teste = header.substring(5,22);
               hora = teste.substring(5,7).toInt();
               minuto = teste.substring(15,17).toInt();
+              
               Serial.println(hora);
               Serial.println(minuto);
               Serial.println("finish");
               //output5State = "off";
               digitalWrite(LED_BUILTIN, 1);
+              
 
               }
 
               if (header.indexOf("GET /D") >= 0) {
                Serial.println("desligado");
-               digitalWrite(LED_BUILTIN, 1);
+               client.print("Dispensador desligado");
+               digitalWrite(output16, HIGH);;
                delay(1000);                // waits for a second
+              }
+
+               if (header.indexOf("GET /estado") >= 0) {
+               Serial.println("estado");
+               client.print("ESTADO DISPENSADOR: OFF");
+               digitalWrite(output16, HIGH);;
+               delay(1000);                // waits for a second
+              }
+
+               if (header.indexOf("GET /hour") >= 0) {
+               Serial.println("estado");
+                client.print("Hora Marcada");
+                client.print(hora);
+                client.print(":");
+                client.print(minuto);
+                Serial.println(header);
+            
               }
 
                if (header.indexOf("GET /L") >= 0) {
                 Serial.println("ligado");
-               digitalWrite(LED_BUILTIN, 0);
+                digitalWrite(output16, LOW);
 
+              }
+
+               if (header.indexOf("GET /adc") >= 0) {
+                sensor= analogRead(ADC);
+                 client.print(sensor);
               }
               
             
-              Serial.println(header);
             
-
-            client.print(hora);
-            client.print(":");
-            client.print(minuto);
+           
             // The HTTP response ends with another blank line
             client.println();
             // Break out of the while loop
