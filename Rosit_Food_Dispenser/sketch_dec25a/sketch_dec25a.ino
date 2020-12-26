@@ -1,4 +1,3 @@
-
 // Load Wi-Fi library
 #include <ESP8266WiFi.h>
 #include <NTPClient.h>
@@ -155,7 +154,7 @@ void loop(){
               client.println("<p><a href=\"/4/off\"><button class=\"button button2\">OFF</button></a></p>");
             }
             client.println("</body></html>");
-            
+            client.println("<p><a href=\"/timer/\">11:59</p>");
             // The HTTP response ends with another blank line
             client.println();
             // Break out of the while loop
@@ -166,6 +165,7 @@ void loop(){
         } else if (c != '\r') {  // if you got anything else but a carriage return character,
           currentLine += c;      // add it to the end of the currentLine
         }
+        
       }
     }
     // Clear the header variable
